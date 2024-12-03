@@ -5,7 +5,7 @@ For the past 4-5 years I've been testing multiple docker containers. Here is a l
 
 
 Docker containers in my testing library:
-- - adguard
+- adguard
 - amule
 - apprise
 - audiobookshelf
