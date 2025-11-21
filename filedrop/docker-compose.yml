@@ -1,0 +1,39 @@
+services:
+  filedrop:
+    image: itsnoted/filedrop
+    environment:
+      - WS_HOST=0.0.0.0
+      - WS_APP_NAME=${APP_NAME}
+      - WS_ABUSE_EMAIL=${ABUSE_EMAIL}
+      - WS_USE_X_FORWARDED_FOR=${USE_X_FORWARDED_FOR}
+      - WS_REQUIRE_CRYPTO=1
+      - TURN_MODE=hmac
+      - TURN_SERVER=turn:(hostname)
+      - TURN_USERNAME=filedrop
+      - TURN_SECRET=${TURN_SECRET}
+    ports:
+      - '5000:5000'
+    networks:
+      - homelab
+
+  coturn:
+    image: coturn/coturn
+    command:
+      - --log-file=stdout
+      - --use-auth-secret
+      - --static-auth-secret=${TURN_SECRET}
+      - --no-multicast-peers
+      - --no-tls
+      - --no-dtls
+      - --no-software-attribute
+      - --fingerprint
+      - --no-cli
+    depends_on:
+      - filedrop
+    networks:
+      - homelab
+
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  homelab:
+    name: homelab      # Networks can also be given a custom name
+    external: true      # This option causes compose to join the above network instead of making a _default one
