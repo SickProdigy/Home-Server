@@ -1,0 +1,43 @@
+services:
+  gameyfin:
+    image: grimsi/gameyfin:2.0.0.beta3 # Replace with the latest version tag from Docker Hub
+    container_name: gameyfin
+    restart: unless-stopped
+    environment:
+      # Generate a new APP_KEY using the command `openssl rand -base64 32` or similar.
+      APP_KEY: YourEncryptedString
+
+      # (optional) Set the URL of your Gameyfin instance if you are using a reverse proxy.
+      APP_URL: https://gameyfin.example.com # Change this to your actual URL if needed
+
+      # (optional) Set the user and group ID to run Gameyfin with a specific user.
+      PUID: 1000 # Change this to your user ID if needed
+      PGID: 1006 # Change this to your group ID if needed
+      #old environment:
+      # - PUID=1000
+      # - PGID=1006
+      # - GAMEYFIN_USER=sick
+      # - GAMEYFIN_PASSWORD=gaming
+      # - GAMEYFIN_IGDB_API_CLIENT_ID=YourAPIClientID
+      # - GAMEYFIN_IGDB_API_CLIENT_SECRET=YourAPIClientSecret
+      # - GAMEYFIN_SOURCES=/opt/gameyfin-library/library-1,/opt/gameyfin-library/library-2,/opt/gameyfin-library/library-3
+    volumes:
+      - /docker-containers/gameyfin/db:/opt/gameyfin/db
+      - /docker-containers/gameyfin/data:/opt/gameyfin/data
+      - /docker-containers/gameyfin/logs:/opt/gameyfin/logs
+      - /games/WindowsGames:/opt/gameyfin-library/windows-games
+      - /games/WindowsGames/Call.of.Duty:/opt/gameyfin-library/cod
+      - "/games/WindowsGames/No.Man's.Sky+Updates:/opt/gameyfin-library/nomansky"
+      #- /docker-containers/gameyfin/configs:/opt/gameyfin-library/library-1-configs
+      # - <Path on your host to the 3rd source folder>:/opt/gameyfin-library/library-4
+    ports:
+      - "8385:8080"
+    networks:
+      homelab:
+        aliases:
+          - gamefin  # how to add multiple aliases
+
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  homelab:            # Sub-section, any network name or 'default' to edit default one created
+    external: true      # This option causes compose to join the above network instead of making a _default one
+
