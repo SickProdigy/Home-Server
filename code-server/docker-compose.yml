@@ -1,0 +1,32 @@
+---
+version: "2.1"
+services:
+  code-server:
+    image: lscr.io/linuxserver/code-server:latest
+    container_name: code-server
+    environment:
+      - PUID=1000
+      - PGID=1006
+      - TZ=Etc/UTC
+      # - PASSWORD=ChangeMe123 #optional
+      # - HASHED_PASSWORD= #optional
+      # - SUDO_PASSWORD=ChangeMe123!@ #optional
+      # - SUDO_PASSWORD_HASH= #optional
+      - PROXY_DOMAIN=code-server.example.com #optional
+      - DEFAULT_WORKSPACE=/config/workspace #optional
+    volumes:
+      - /docker-containers/code-server/config:/config
+      - /Documents/prodigy:/media/prodigy
+    ports:
+      - 8443:8443
+    restart: unless-stopped
+    stdin_open: true    # to attach to containers
+    tty: true           # also used to attach to containers
+#    network_mode: service:wireguard     # To run through vpn service container, in turn UI port must be forwarded inside vpn. No local access unless otherwise defined
+    networks:           # Specify network for container
+      - homelab
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+
+  homelab:
+#    name: homelab      # Networks can also be given a custom name, not needed if existing
+    external: true      # This option causes compose to join the above network instead of making a _default one (supposedly)
