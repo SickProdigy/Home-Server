@@ -1,0 +1,27 @@
+---
+version: "3.3"
+services:
+  deemix:
+    image: registry.gitlab.com/bockiii/deemix-docker
+    container_name: Deemix
+    volumes:
+       - /unsorted/deemix:/downloads # it will remove empty folders from directories
+       - /docker-containers/deemix:/config
+    environment:
+       - PUID=1000
+       - PGID=1003
+       - UMASK_SET=022
+       - DEEMIX_SINGLE_USER=true
+    ports:
+       - 6595:6595
+    restart: unless-stopped
+    stdin_open: true    # to attach to containers
+    tty: true           # also used to attach to containers
+#    network_mode: service:wireguard     # To run through vpn service container, in turn UI port must be forwarded inside vpn. No local access unless otherwise defined
+    networks:           # Specify network for container
+      - homelab
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+
+  homelab:
+#    name: homelab      # Networks can also be given a custom name, not needed if existing
+    external: true      # This option causes compose to join the above network instead of making a _default one (supposedly)
