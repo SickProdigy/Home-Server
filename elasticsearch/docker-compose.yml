@@ -1,0 +1,140 @@
+# version: '2.2'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.18.2 # the one listed on website is sort of dated
+    container_name: elasticsearch
+    environment: 
+      - "node.name=es01"
+      - "cluster.name=elasticsick"
+      - "discovery.type=single-node"
+      # - "ELASTIC_USERNAME=elastic"              # default superuser, don't think you can specify here anymore
+      - "ELASTIC_PASSWORD=ChangeMe123!#@"       # matching Elasticsearch password, user: elastic
+      - "bootstrap.memory_lock=true"
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      # - "xpack.security.enabled=true"  # Set false when testing, true for production # uncommented this line to fix 'received plaintext http traffic on an https channel' # worked # kibanna loading now # Kibana cannot connect to the Elastic Package Registry, which provides Elastic Agent integrations. Ensure the proxy server (opens in a new tab or window) or your own registry(opens in a new tab or window) is configured correctly, or try again later.
+      # - "xpack.security.http.ssl.enabled=true"  # was throwing error without it # enable ssl for http layer so kibana can connect securely
+      # - "xpack.security.enrollment.enabled=true" # must be true to generate toke for kibana.yml
+      # - "xpack.security.transport.ssl.enabled=true" # transport ssl when forwarding between nodes/servers
+      - "path.repo=/usr/share/elasticsearch/data/snapshot"
+      # - "xpack.security.http.ssl.key=/usr/share/elasticsearch/config/certs/privkey.pem" # shouldn't be needed within containers.. also needs disabled when other is not enabled
+      # - "xpack.security.http.ssl.certificate=/usr/share/elasticsearch/config/certs/fullchain.pem"
+      # - "xpack.security.transport.ssl.key=/usr/share/elasticsearch/config/certs/privkey.pem"
+      # - "xpack.security.transport.ssl.certificate=/usr/share/elasticsearch/config/certs/fullchain.pem"
+    volumes:
+      - /docker-containers/elasticsearch/data:/usr/share/elasticsearch/data
+      # - /docker-containers/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      # - /docker-containers/elasticsearch/config:/usr/share/elasticsearch/config # if you mount the config directory you need the files present https://github.com/elastic/elasticsearch/tree/main/distribution/src/config
+      - /docker-containers/swag-letsencrypt/etc/letsencrypt/live/example.com/fullchain.pem:/usr/share/elasticsearch/config/certs/fullchain.pem:ro # Possibly not needed I hope, no encryption needed inbetween container network
+      - /docker-containers/swag-letsencrypt/etc/letsencrypt/live/example.com/chain.pem:/usr/share/elasticsearch/config/certs/chain.pem:ro #
+      - /docker-containers/swag-letsencrypt/etc/letsencrypt/live/example.com/privkey.pem:/usr/share/elasticsearch/config/certs/privkey.pem:ro
+    ports:
+      - 9200:9200
+      - 9300:9300  # for ssl transport # enabled for testing
+    restart: unless-stopped
+    networks:           # Specify network for container
+      homelab:
+        aliases:
+          - es # adding multiple aliases under certain network
+          - elastic
+          - es01
+
+  kibana:   # gui for elastic basically
+    image: docker.elastic.co/kibana/kibana:8.18.2
+    container_name: kibana
+    environment:
+      - SERVER_NAME=kibana
+      - SERVER_HOST=kibana # should technically work here so i don't have to mount config # ips and hostnames work
+      - SERVER_PORT=5601 # should technically work here so i don't have to mount config # define port so it doesnt choose random later
+      - SERVER_PUBLICBASEURL="https://kibana.example.com" # i don't reckon needed with reverse proxy, it handles the requests. Recommended for production env
+      # - server.publicBaseUrl # for nginx reverse proxy ig?
+      # - urlForwarding # maybe have to do with publicBaseURL, doesnt seem to effect ^
+      - ELASTICSEARCH_HOSTS="http://es:9200"
+      - ELASTICSEARCH_USERNAME=kibana_system          # kibana_system if you set that password
+      - ELASTICSEARCH_PASSWORD="KibanaChangeMe123!#@Pass123!"
+      # - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=/usr/share/kibana/config/certs/fullchain.pem
+    volumes:  # say you should create kibana.yml to configure
+      # - /docker-containers/elasticsearch/kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml # most things here can be added in env now
+      - /docker-containers/elasticsearch/kibana/logs:/var/logs/
+      - /docker-containers/swag-letsencrypt/etc/letsencrypt/live/example.com/fullchain.pem:/usr/share/kibana/config/certs/fullchain.pem:ro # Possibly not needed I hope
+      - /docker-containers/swag-letsencrypt/etc/letsencrypt/live/example.com/chain.pem:/usr/share/kibana/config/certs/chain.pem:ro #
+      - /docker-containers/swag-letsencrypt/etc/letsencrypt/live/example.com/privkey.pem:/usr/share/kibana/config/certs/privkey.pem:ro
+# and in kibana.yml reference the CA or set REQUESTS_CA_BUNDLE env as needed # elasticsearch.ssl.certificateAuthorities: [ "/usr/share/kibana/config/certs/chain.pem" ]
+    ports:
+      - 5601:5601
+    restart: unless-stopped
+    networks:
+      - homelab
+    depends_on:
+      - elasticsearch
+
+  metricbeat:
+    container_name: metricbeat
+    depends_on:
+      - elasticsearch
+      - kibana
+      # elasticsearch:
+      #   condition: service_healthy
+      # kibana:
+      #   condition: service_healthy
+    image: docker.elastic.co/beats/metricbeat-oss:8.18.2
+    user: root # must have matching entries in passwd file apparently, so have to use root, root must also have access to config, so can't chown directory..
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      # For testing ssl stuff... didn't workout
+      - /docker-containers/swag-letsencrypt/etc/letsencrypt/live/example.com/fullchain.pem:/usr/share/metricbeat/certs/fullchain.pem:r
+      - /docker-containers/swag-letsencrypt/etc/letsencrypt/live/example.com/privkey.pem:/usr/share/metricbeat/certs/privkey.pem:r
+      # Personal Data locations
+      - /docker-containers/elasticsearch/metricbeat/data:/usr/share/metricbeat/data
+      - /docker-containers/elasticsearch/metricbeat/config/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro
+      - /docker-containers/elasticsearch/metricbeat/diskqueue:/usr/share/metricbeat/diskqueue
+    networks:
+      - homelab
+
+  # How to Tune Elastic Beats Performance: A Practical Example with Batch Size, Worker Count, and More
+  # https://www.elastic.co/blog/how-to-tune-elastic-beats-performance-a-practical-example-with-batch-size-worker-count-and-more?blade=tw&hulk=social
+  filebeat:
+    image: elastic/filebeat:8.18.2
+    # https://github.com/docker/swarmkit/issues/1951
+    container_name: filebeat
+    hostname: "es01-filebeat"
+    # Need to override user so we can access the log files, and docker.sock
+    user: root
+    volumes:
+      - /docker-containers/elasticsearch/filebeat/data:/usr/share/filebeat/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      # This is needed for filebeat to load container log path as specified in filebeat.yml
+      - /var/lib/docker/containers/:/var/lib/docker/containers/:ro
+
+      # # This is needed for filebeat to load jenkins build log path as specified in filebeat.yml
+      # - /var/lib/docker/volumes/jenkins_home/_data/jobs/:/var/lib/docker/volumes/jenkins_home/_data/jobs/:ro
+
+      # This is needed for filebeat to load logs for system and auth modules
+      - /var/log/:/var/log/:ro
+
+      # This is needed for filebeat to load logs for auditd module. you might have to install audit system
+      # on ubuntu first (sudo apt-get install -y auditd audispd-plugins)
+      - /var/log/audit/:/var/log/audit/:ro
+      - /var/log/syslog:/var/log/syslog:ro
+      - /var/log/auth.log:/var/log/auth.log:ro
+
+      # Personal locations
+      - /docker-containers/elasticsearch/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /docker-containers/elasticsearch/filebeat/diskqueue:/usr/share/filebeat/diskqueue
+    environment:
+      - ELASTICSEARCH_HOST="http://es:9200"
+      - KIBANA_HOST="http://kibana:5601"
+      - ELASTICSEARCH_USERNAME="elastic"
+      - ELASTICSEARCH_PASSWORD="ChangeMe123!#@"
+    # disable strict permission checks
+    command: ["filebeat", "-e", "--strict.perms=false"]
+    deploy:
+      mode: global
+    depends_on:
+      - elasticsearch
+      - kibana
+    networks:
+      - homelab
+
+networks:
+  homelab:
+    external: true      # This option causes compose to join the above network instead of making a _default one (supposedly) also forces to join instead of creating one
