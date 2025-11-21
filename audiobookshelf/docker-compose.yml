@@ -1,0 +1,27 @@
+version: "3.7"
+services:
+  audiobookshelf:
+    container_name: audiobookshelf
+    image: ghcr.io/advplyr/audiobookshelf:latest #2.3.3
+    environment:
+      - PUID=1000
+      - PGID=1006
+      - TZ=America/New_York
+    ports:
+      - 13378:80
+    volumes:
+      - /Books/audio_books:/audiobooks
+      - /Books/calibre:/calibre
+      - /Books/Educational:/books-educational
+      - /Music/Podcasts:/podcasts
+      - /docker-containers/audiobookshelf:/config
+      - /docker-containers/audiobookshelf/metadata:/metadata
+    restart: unless-stopped
+    stdin_open: true    # to attach to containers
+    tty: true           # also used to attach to containers
+#    network_mode: service:wireguard     # To run through vpn service container, in turn UI port must be forwarded inside vpn. No local access unless otherwise defined
+    networks:           # Specify network for container
+      - homelab
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  homelab:
+    external: true      # This option causes compose to join the above network instead of making a _default one (supposedly)
