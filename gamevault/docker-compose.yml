@@ -1,0 +1,32 @@
+services:
+  gamevault-backend:
+    image: phalcode/gamevault-backend:latest
+    container_name: gamevault
+    restart: unless-stopped
+    environment:
+      PUID: 1000
+      PGID: 1006
+      DB_HOST: postgres
+      DB_USERNAME: yourusername
+      DB_PASSWORD: PostgresChangeMe123!
+      SERVER_ADMIN_USERNAME: yourusername
+      SERVER_MAX_DOWNLOAD_BANDWIDTH_IN_KBPS: 2500
+    volumes:
+      # Mount the folder where your games are
+      - /docker-containers/gamevault/config:/config
+      # Mount the folder where your games are
+      - /games/WindowsGames:/files
+      # Mount the folder where GameVault should store its media
+      - /docker-containers/gamevault/media:/media
+      # Mount the folder where GameVault should store its logs
+      - /docker-containers/gamevault/logs:/logs
+    ports:
+      - 8581:8080/tcp
+    networks:
+      homelab:
+        aliases:
+          - gv  # how to add multiple aliases
+
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  homelab:            # Sub-section, any network name or 'default' to edit default one created
+    external: true      # This option causes compose to join the above network instead of making a _default one
