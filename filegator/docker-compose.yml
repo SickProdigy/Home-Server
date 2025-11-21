@@ -1,0 +1,39 @@
+version: '2'
+services:
+  filegator:
+    container_name: filegator
+    image: filegator/filegator
+    restart: always
+    ports:
+      - "8080:8080"
+    volumes:
+      # common mount points are listed here
+      # make sure filegator can read/write to the mounted volume
+
+      # mount local folder as a repository
+      # - ./files:/var/www/filegator/repository
+      - "/unsorted:/var/www/filegator/repository/Downloads" #Shared Downloads folder
+      - "/Books:/var/www/filegator/repository/Books" #Shared Books Folder
+      - "/games:/var/www/filegator/repository/Games" #Shared Games folder
+      - "/Music:/var/www/filegator/repository/Music" #Shared Music Folder
+      - "/Movies:/var/www/filegator/repository/Movies" #Shared Movies folder
+      - "/programs:/var/www/filegator/repository/Programs" #Shared Movies folder
+      - "/TvShows:/var/www/filegator/repository/TvShows" #Shared TvShows folder
+      - "/Videos:/var/www/filegator/repository/Videos" #Shared Videos folder
+
+      # locally stored users.json file
+      #- /docker-containers/filegator/config/users.json:/var/www/filegator/private/users.json
+
+      # load your own custom configuration file
+      #- /docker-containers/filegator/config/configuration.php:/var/www/filegator/configuration.php
+    stdin_open: true    # to attach to containers
+    tty: true           # also used to attach to containers
+#    network_mode: service:wireguard     # To run through vpn service container, in turn UI port must be forwarded inside vpn. No local access unless otherwise defined
+    networks:           # Specify network for container
+      homelab:
+        aliases:
+          - fileg # adding multiple aliases under certain network
+networks:    # specify the network 2x. In service, and in this tag area..
+  homelab:
+    name: homelab      # Networks can also be given a custom name
+    external: true # This option causes compose to join the above network instead of making a _default one
