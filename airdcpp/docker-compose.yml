@@ -1,0 +1,38 @@
+services:
+  airdcpp:
+    image: gangefors/airdcpp-webclient
+    container_name: airdcpp
+    environment:
+      - PUID=1000
+      - PGID=1006
+    volumes:
+      - /docker-containers/airdcpp/config:/.airdcpp
+      - "/unsorted/airdcpp:/Downloads" #Shared Downloads folder
+      - "/Books:/Share/Books" #Shared Books folder
+      - "/games:/Share/Games" #Shared Games folder
+      - "/Music:/Share/Music" #Shared Music Folder
+      - "/Movies:/Share/Movies" #Shared Movies folder
+      - "/srv/samba/programs/Movies:/Share/Programs" #Shared Movies folder
+      - "/TvShows:/Share/TvShows" #Shared TvShows folder
+      - "/Videos:/Share/Videos" #Shared Videos folder
+      
+    ports:
+        #- 80:5600
+        - 5602:5600
+        #- 443:5601
+        - 5603:5601
+        - 21248:21248
+        - 21248:21248/udp
+        - 21249:21249
+    restart: unless-stopped
+    stdin_open: true    # to attach to containers
+    tty: true           # also used to attach to containers
+#    network_mode: service:wireguard     # To run through vpn service container, in turn UI port must be forwarded inside vpn. No local access unless otherwise defined
+    networks:           # Specify network for container
+      homelab:
+        aliases:
+          - dcpp # adding multiple aliases under certain network
+networks:    # specify the network 2x. In service, and in this tag area..
+  homelab:
+    name: homelab      # Networks can also be given a custom name
+    external: true # This option causes compose to join the above network instead of making a _default one
