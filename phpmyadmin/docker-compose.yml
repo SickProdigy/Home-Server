@@ -1,0 +1,25 @@
+---
+version: "2.1"
+services:
+  phpmyadmin:
+    image: lscr.io/linuxserver/phpmyadmin:latest
+    container_name: phpmyadmin
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/New_York
+      - PMA_ARBITRARY=1 #optional
+      - PMA_ABSOLUTE_URI=https://phpmyadmin.example.com #optional
+    volumes:
+      - /docker-containers/phpmyadmin:/config
+    ports:
+      - 8008:8008
+    restart: unless-stopped
+
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      - PMA_ARBITRARY=1
