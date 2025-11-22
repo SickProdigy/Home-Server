@@ -1,0 +1,27 @@
+# version: "2.1" # Kind of old school and not needed with portainer
+services:
+# Music Streaming software. Browser + phone support substreamer/isub/amperfy(iphone)
+  navidrome:
+    image: deluan/navidrome:latest
+    container_name: navidrome
+    user: 1000:1006 # should be owner of volumes
+    ports:
+      - "4533:4533"
+    environment:
+      # Optional: put your config options customization here. Examples:
+      ND_CONFIGFILE: "/data/navidrome.toml"
+      ND_PROMETHEUS_ENABLED: "true"
+      ND_PROMETHEUS_METRICSPATH: "/metrics_naviprodigy986"
+    volumes:
+      - "/docker-containers/navidrome:/data"
+      - "/Music:/music:ro"
+    restart: unless-stopped
+    stdin_open: true    # to attach to containers
+    tty: true           # also used to attach to containers
+    networks:           # Specify network for container
+      - homelab
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+
+  homelab:
+    name: homelab      # Networks can also be given a custom name
+    external: true      # This option causes compose to join the above network instead of making a _default one (supposedly)
