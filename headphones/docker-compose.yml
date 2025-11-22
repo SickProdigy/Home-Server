@@ -1,0 +1,24 @@
+version: "2.1"
+services:
+  headphones:
+    image: lscr.io/linuxserver/headphones:latest
+    container_name: headphones
+    environment:
+      - PUID=1000
+      - PGID=1006
+      - TZ=America/New_York
+    volumes:
+      - /docker-containers/headphones:/config
+      - /unsorted:/downloads
+      - /Music:/music
+    ports:
+      - 9581:8181
+    restart: unless-stopped
+    networks:
+      homelab:
+        aliases:
+          - headphone # adding multiple aliases under certain network
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  homelab:
+    name: homelab      # Networks can also be given a custom name
+    external: true      # This option causes compose to join the above network instead of making a _default one
