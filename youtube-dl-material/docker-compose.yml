@@ -1,0 +1,37 @@
+#version: "2.1"    # Outdated and not used in updated compose/portainer
+services:
+  ytdl_material:
+    container_name: ytdl-material
+#    hostname: youtube-dl-server      # if you need a quick second name possibly
+    environment:
+      UID: 1000
+      GID: 1006
+      ALLOW_CONFIG_MUTATIONS: 'true'
+      ytdl_mongodb_connection_string: 'mongodb://yourusername:ChangeMe123!@mongo:27017/'
+      ytdl_use_local_db: 'true'
+      write_ytdl_config: 'true'
+    restart: always
+#    depends_on: # is compose file specific
+#      - mongo-db
+    volumes:
+      - /docker-containers/youtube-dl-material/appdata:/app/appdata
+      - /Music/Youtube-DL:/app/audio
+      - /Videos/Youtube-DL:/app/video
+      - /docker-containers/youtube-dl-material/subscriptions:/app/subscriptions
+      - /docker-containers/youtube-dl-material/users:/app/users
+    ports:
+      - "8998:17442"
+    image: tzahi12345/youtubedl-material:latest
+    stdin_open: true
+    tty: true
+    networks:
+      homelab:
+        aliases:
+          - youtube-dl-server  # how to add multiple aliases
+          - youtube-dl
+          - ytdl
+          - yt-dl-material
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  homelab:            # Sub-section, any network name or 'default' to edit default one created
+
+    external: true      # This option causes compose to join the above network instead of making a _default one
