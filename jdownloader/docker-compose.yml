@@ -1,0 +1,16 @@
+version: '3'
+services:
+  jdownloader:
+    container_name: jdownloader
+    image: jlesage/jdownloader-2
+    ports:
+      - "5800:5800"
+    volumes:
+      - /docker-containers/jdownloader:/config:rw
+      - /unsorted/jdownloader:/output:rw
+    restart: unless-stopped
+    networks:           # Specify network for container
+      - homelab
+networks:    # specify the network 2x. In service, and in this tag area
+  homelab:
+    external: true      # join the above network instead of making a _default one
