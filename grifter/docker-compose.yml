@@ -1,0 +1,12 @@
+version: '3.3'
+services:
+    grifter:
+        image: 'grifter:latest'
+        container_name: grifter
+        volumes:
+            - '/docker-containers/grifter/grifter.toml:/opt/grifter/grifter.toml'
+            - '/docker-containers/grifter/cache:/opt/grifter/cache' # optional, but if you dont mount the cache as volume, it will be lost after the container is destroyed
+            - '/games/WindowsGames:/opt/grifter/library:ro' # Mount games as "read-only"
+        ports:
+            - '3909:39090'
+        restart: unless-stopped
