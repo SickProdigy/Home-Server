@@ -1,0 +1,46 @@
+---
+version: "2.1"
+services:
+  netbootxyz:
+    image: lscr.io/linuxserver/netbootxyz:latest
+    container_name: netbootxyz
+    environment:
+      - PUID=1000
+      - PGID=1006
+      - TZ=America/New_York
+      - MENU_VERSION=2.0.83 #optional
+      - WEB_APP_PORT=3000 #optional
+      - NGINX_PORT=80 #optional
+    volumes:
+      - /docker-containers/netbootxyz/config:/config
+      - /docker-containers/netbootxyz/assets:/assets #optional
+    ports:
+      - 3069:3000
+      - 69:69/udp
+      - 8289:80 #optional
+    restart: unless-stopped
+    stdin_open: true    # to attach to containers
+    tty: true           # also used to attach to containers
+    networks:           # Specify network for container
+      mcprodnet:
+        ipv4_address: 192.168.1.168
+        #ipv6_address: 2605:a601:a627:100:2::1 # ip changed
+#        ipv6_address: 2605:a601:9132:d100:2::1 # newer, private setup within your network is better though fe:etc
+#        ipv6_address: 2001:3200:3200::20  # disabled because google fiber is shit and always changing and no way to update here
+      homelab:
+        aliases:
+          - netboot # adding multiple aliases under certain network
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  homelab:
+    name: homelab      # Networks can also be given a custom name
+    external: true      # This option causes compose to join the above network instead of making a _default one (supposedly)
+  mcprodnet:
+    #enable_ipv6: true
+    name: mcprodnet      # We will name the network instead of letting docker do something random
+    driver: macvlan      # Making the above network macvlan
+    driver_opts:         # driver options to use
+      parent: eno1     # usually eth0 or eth1 but not always, used enp3s0 and enp4s0, had to delete /var/lib/docker/network/files/local-kv.db because phantom network
+    ipam:
+      config:
+        - subnet: "192.168.1.0/24"    #Basically copy router range
+          gateway: "192.168.1.1"      #host will eventually route to router, or just go direct
