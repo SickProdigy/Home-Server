@@ -1,0 +1,25 @@
+version: '3'
+services:
+  monitoring:
+    image: hackebein/garrysmod
+    volumes:
+      - ./server.cfg:/opt/steam/garrysmod/cfg/server.cfg
+      - ./overlay:/opt/overlay
+    ports:
+      - 27015:27015/tcp
+      - 27015:27015/udp
+    environment:
+      - AUTHKEY=...
+      - GAMEMODE=terrortown
+      - MAP=ttt_minecraft_b5
+      - WORKSHOP=843519054
+      - WORKSHOPDL=843519054
+    stdin_open: true    # to attach to containers
+    tty: true           # also used to attach to containers
+#    network_mode: service:wireguard     # To run through vpn service container, in turn UI port must be forwarded inside vpn. No local access unless otherwise defined
+    networks:           # Specify network for container
+      - homelab
+
+networks:    # specify the network 2x. In service, and in this tag area
+  homelab:
+    external: true      # join the above network instead of making a _default one
