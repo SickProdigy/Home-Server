@@ -1,0 +1,26 @@
+version: "2.1"
+services:
+# Indexer for torrent sites
+  jackett:
+    image: lscr.io/linuxserver/jackett:latest
+    container_name: jackett
+    environment:
+      - PUID=1000
+      - PGID=1006
+      - TZ=America/New_York
+      - AUTO_UPDATE=true #optional
+      #- RUN_OPTS=<run options here> #optional
+    volumes:
+      - /docker-containers/jackett:/config
+      - /unsorted/qbit/_watched:/downloads
+    ports:
+      - 9117:9117
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    networks:
+      - homelab
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  homelab:
+    name: homelab      # Networks can also be given a custom name
+    external: true      # This option causes compose to join the above network instead of making a _default one
