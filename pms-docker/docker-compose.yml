@@ -1,0 +1,47 @@
+#Updated slowly it seems so I tend not to use. Beta hasn't been updated in 3 years but that may be a mistake in transparency I suppose.
+---
+version: "2.1"
+services:
+  plex:
+    image: plexinc/pms-docker/plex:beta
+    container_name: plex
+    environment:
+      - PLEX_UID=1000
+      - PLEX_GID=1006
+      - TZ=America/New_York
+      - VERSION=docker
+      - PLEX_CLAIM=YourClaimString
+      - ADVERTISE_IP="http://192.168.1.185:32400/,https://plex.example.com/"
+      - ALLOWED_NETWORKS="192.168.1.1/24"    # Allow access to the server without requiring authorization.
+    volumes:
+      - /docker-containers/plex:/config
+      - /TvShows:/tv
+      - /Music:/music
+      - /Movies:/movies
+      - /Videos:/videos
+      - /Pictures:/pictures
+      - /docker-containers/swag-letsencrypt/keys/letsencrypt/fullchain.pem:/rcs1/certs/fullchain.pem:r
+      - /docker-containers/swag-letsencrypt/keys/letsencrypt/privkey.pem:/rcs1/certs/privkey.pem:r
+    devices:
+      - /dev/dri:/dev/dri       # not sure if supported, should be HW
+    ports:
+      - 32400:32400
+      - 1900:1900/udp
+      - 3005:3005
+      #- 5353:5353/udp     #bonjour shit
+      - 8324:8324
+      - 32410:32410/udp
+      - 32412:32412/udp
+      - 32413:32413/udp
+      - 32414:32414/udp
+      - 32469:32469
+    restart: unless-stopped
+    stdin_open: true    # to attach to containers
+    tty: true           # also used to attach to containers
+#    network_mode: service:wireguard     # To run through vpn service container, in turn UI port must be forwarded inside vpn. No local access unless otherwise defined
+    networks:           # Specify network for container
+      - homelab
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  homelab:
+#    name: homelab      # Networks can also be given a custom name, not needed if existing
+    external: true      # This option causes compose to join the above network instead of making a _default one (supposedly)
