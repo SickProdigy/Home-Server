@@ -1,0 +1,26 @@
+version: "2.1"
+services:
+# Plex statistics software
+  tautulli:
+    image: lscr.io/linuxserver/tautulli:latest
+    container_name: tautulli
+    environment:
+      - PUID=1000
+      - PGID=1006
+      - TZ=America/New_York
+    volumes:
+      - /docker-containers/tautulli:/config
+      - /docker-containers/swag-letsencrypt/etc/letsencrypt/live/example.com/fullchain.pem:/certs/fullchain.pem:r
+      - /docker-containers/swag-letsencrypt/etc/letsencrypt/live/example.com/privkey.pem:/certs/privkey.pem:r
+    ports:
+      - 8181:8181
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    networks:
+      - homelab
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+
+  homelab:
+    name: homelab      # Networks can also be given a custom name
+    external: true      # This option causes compose to join the above network instead of making a _default one
