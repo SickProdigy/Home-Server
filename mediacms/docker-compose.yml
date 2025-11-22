@@ -1,0 +1,96 @@
+version: "3"
+
+services:
+  migrations:
+    image: mediacms/mediacms:latest
+    volumes:
+      - /docker-containers/mediacms:/home/mediacms.io/mediacms/
+    environment:
+      ENABLE_UWSGI: 'no'
+      ENABLE_NGINX: 'no'
+      ENABLE_CELERY_SHORT: 'no'
+      ENABLE_CELERY_LONG: 'no'
+      ENABLE_CELERY_BEAT: 'no'
+      ADMIN_USER: 'yourusername'
+      ADMIN_EMAIL: 'your@email.com'
+      ADMIN_PASSWORD: 'ChangeMe123'
+    command: "./deploy/docker/prestart.sh"
+    restart: on-failure
+    depends_on:
+      redis:
+        condition: service_healthy
+      # db:
+      #   condition: service_healthy
+    networks:           # Specify network for container
+      - homelab
+  web:
+    image: mediacms/mediacms:latest
+    deploy:
+      replicas: 1
+    ports:
+      - "80:80"
+    volumes:
+      - /docker-containers/mediacms:/home/mediacms.io/mediacms/
+    environment:
+      ENABLE_CELERY_BEAT: 'no'
+      ENABLE_CELERY_SHORT: 'no'
+      ENABLE_CELERY_LONG: 'no'
+      ENABLE_MIGRATIONS: 'no'
+    depends_on:
+      - migrations
+    networks:           # Specify network for container
+      - homelab
+  celery_beat:
+    image: mediacms/mediacms:latest
+    volumes:
+      - /docker-containers/mediacms:/home/mediacms.io/mediacms/
+    environment:
+      ENABLE_UWSGI: 'no'
+      ENABLE_NGINX: 'no'
+      ENABLE_CELERY_SHORT: 'no'
+      ENABLE_CELERY_LONG: 'no'
+      ENABLE_MIGRATIONS: 'no'
+    depends_on:
+      - redis
+  celery_worker:
+    image: mediacms/mediacms:latest
+    deploy:
+      replicas: 1
+    volumes:
+      - /docker-containers/mediacms:/home/mediacms.io/mediacms/
+    environment:
+      ENABLE_UWSGI: 'no'
+      ENABLE_NGINX: 'no'
+      ENABLE_CELERY_BEAT: 'no'
+      ENABLE_MIGRATIONS: 'no'
+    depends_on:
+      - migrations
+  # Uncomment below to use postgres db, running in seperate stack. 
+  # db:
+  #   image: postgres:15.2-alpine
+  #   volumes:
+  #     - ../postgres_data:/var/lib/postgresql/data/
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: mediacms
+  #     POSTGRES_PASSWORD: mediacms
+  #     POSTGRES_DB: mediacms
+  #     TZ: Europe/London
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready", "--host=db", "--dbname=$POSTGRES_DB", "--username=$POSTGRES_USER"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  redis:
+    image: "redis:alpine"
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+#    network_mode: service:wireguard     # To run through vpn service container, in turn UI port must be forwarded inside vpn. No local access unless otherwise defined
+
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  homelab:
+    external: true      # This option causes compose to join the above network instead of making a _default one (supposedly)
