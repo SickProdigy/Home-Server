@@ -1,0 +1,25 @@
+version: "2.1"
+services:
+# Keeps track of movies and downloads new ones added from lists.
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    environment:
+      - PUID=1000
+      - PGID=1006
+      - TZ=America/New_York
+    volumes:
+      - /docker-containers/radarr:/config
+      - /Movies/Main-Library:/movies #optional
+      - /unsorted:/downloads #optional
+    ports:
+      - 7878:7878
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    networks:
+      - homelab
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  homelab:
+    name: homelab      # Networks can also be given a custom name
+    external: true      # This option causes compose to join the above network instead of making a _default one
