@@ -1,0 +1,24 @@
+---
+version: "2.1"
+services:
+  pidgin:
+    image: lscr.io/linuxserver/pidgin:latest
+    container_name: pidgin
+    security_opt:
+      - seccomp:unconfined #optional
+    environment:
+      - PUID=1000
+      - PGID=1006
+      - TZ=America/New_York
+    volumes:
+      - /docker-containers/pidgin:/config
+    ports:
+      - 3420:3000
+      - 3421:3001
+    restart: unless-stopped
+    networks:           # Specify network for container
+      - homelab
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  homelab:
+#    name: homelab      # Networks can also be given a custom name, not needed if existing
+    external: true      # This option causes compose to join the above network instead of making a _default one (supposedly)
