@@ -1,0 +1,62 @@
+version: "3"
+services:
+  gluetun:
+    image: qmcgaw/gluetun
+    container_name: gluetun
+    # line above must be uncommented to allow external containers to connect.
+    # See https://github.com/qdm12/gluetun-wiki/blob/main/setup/connect-a-container-to-gluetun.md#external-container-to-gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    ports:
+      - 8888:8888/tcp # HTTP proxy
+      - 8388:8388/tcp # Shadowsocks
+      - 8388:8388/udp # Shadowsocks
+      # wireguard
+      - "51820:51820/udp"
+      - "51821:51821/tcp"
+    volumes:
+      - /docker-containers/gluetun:/gluetun
+    environment:
+      # HTTP proxy setup
+      - HTTPPROXY=on
+      - HTTPPROXY_USER=yourusername
+      - HTTPPROXY_PASSWORD=ChangeMe123
+      - HTTPPROXY_LOG=on
+      # Shadow Sock Setup
+      - SHADOWSOCKS=on
+      - SHADOWSOCKS_PASSWORD=ChangeMe123
+      - SHADOWSOCKS_CIPHER=chacha20-ietf-poly1305
+      - SHADOWSOCKS_LOG=on
+      # Firewall setup
+      - BLOCK_MALICIOUS=off
+      - BLOCK_SURVEILLANCE=off
+      - BLOCK_ADS=off
+      - DOT=off
+      - FIREWALL_OUTBOUND_SUBNETS=192.168.1.0/24,172.20.0.0/16
+      # See https://github.com/qdm12/gluetun-wiki/tree/main/setup#setup
+      - VPN_SERVICE_PROVIDER=nordvpn
+      - VPN_TYPE=wireguard
+      # OpenVPN:
+      # - OPENVPN_USER=abc
+      # - OPENVPN_PASSWORD=abc
+      # Wireguard:
+      - WIREGUARD_PRIVATE_KEY=WireguardPrivateKey
+      # - WIREGUARD_ADDRESSES=10.64.222.21/32
+      - SERVER_COUNTRIES="United States"
+      # Timezone for accurate log times
+      - TZ=America/New_York
+      # Server list updater
+      # See https://github.com/qdm12/gluetun-wiki/blob/main/setup/servers.md#update-the-vpn-servers-list
+      - UPDATER_PERIOD=24h
+      
+#     networks:           # Specify network for container
+#       - homelab
+
+# networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+#   homelab:
+#     external: true      # This option causes compose to join the above network instead of making a _default one (supposedly)
+
+# docker run --rm -v /docker-containers/gluetun:/gluetun qmcgaw/gluetun format-servers -nordvpn
+# docker run --rm -v /docker-containers/gluetun:/gluetun qmcgaw/gluetun format-servers -hidemyass
