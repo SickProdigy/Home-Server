@@ -1,9 +1,9 @@
 # Home-Server Development
-## This is my docker home server development repo.
+## Docker Home Server Testing & Setup
 
-For the past 4-5 years I've been testing multiple docker containers. Here is a list of anything worth having in docker imo.. Few things may be left off or not currently maintained. I plan to add folders and update docker-compose.yml for each container later. At least for backup purposes. Some currently have private info so will need to refine those first.
+Welcome to my home server development repository! Over the past 4-5 years, I’ve tested a wide variety of Docker containers for self-hosting and automation. This repo collects the containers I’ve found most useful, though some may be missing or not actively maintained. My goal is to organize each container into its own folder with a `docker-compose.yml` for easy setup and backup. Some configurations contain private information and will be refined before public release.
 
-Docker containers in my testing library:
+Below is a list of containers I’ve tested and recommend for various home server tasks.
 
 - [adguard](./adguard)  
   *Network-wide ad blocker and privacy protection.*
@@ -240,4 +240,67 @@ Docker containers in my testing library:
 - [youtube-dl-server](./youtube-dl-server)  
   *REST API for youtube-dl.*
 
-Most of these I have used, give or take a few. Around 70 or so active currently. Will format those later
+## How To Use This Repo
+
+### Prerequisites
+- [Docker](https://docs.docker.com/get-docker/) installed on your server or local machine.
+- [Docker Compose](https://docs.docker.com/compose/install/) (if using `docker-compose.yml` files).
+- [Portainer](https://www.portainer.io/) (optional, for managing containers via a web UI).
+
+### Getting Started
+
+1. **Clone the Repository**
+   ```sh
+   git clone https://github.com/yourusername/home-server.git
+   cd home-server
+   ```
+
+2. **Choose a Container**
+   - Browse the folders listed above.
+   - Each folder typically contains a `docker-compose.yml` or instructions for setup.
+
+3. **Configure Environment Variables**
+   - Some containers require environment variables or custom configuration files.
+   - Review the comments in each `docker-compose.yml` or `.env` file within the container's folder for setup details.
+   - Comments are marked with `#` for easy reference.
+
+4. **Start a Container**
+   ```sh
+   cd <container-folder>
+   docker-compose up -d
+   ```
+   - Or use Portainer to deploy and manage containers/stacks through its web interface.
+
+5. **Access the Service**
+   - Most services will be available at `http://localhost:<port>` or via your server’s IP.
+
+### Updating Containers
+
+- To update a running container:
+  ```sh
+  docker-compose pull
+  docker-compose up -d
+  ```
+- Or use Portainer's update features. Portainer > Stack > Editor > Update The Stack > Tick (Re-pull image and redeploy)
+- Or enable automatic updates with Watchtower.  
+  Deploy Watchtower to monitor and update your containers automatically:
+  ```sh
+  docker run -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower
+  ```
+
+### Stopping Containers
+
+- To stop a container:
+  ```sh
+  docker-compose down
+  ```
+- Or stop containers from the Portainer dashboard.
+
+### Backup & Restore
+
+- Backup your configuration files and persistent data folders regularly.
+- Restore by copying your backups back into the appropriate folders before starting the containers.
+
+---
+
+For container-specific instructions, see the comments within each file.
