@@ -1,0 +1,30 @@
+version: "3.0"
+services:
+  mariadb:
+    image: lscr.io/linuxserver/mariadb
+    container_name: mariadb
+    environment:
+      - PUID=1000
+      - PGID=1003
+      - MYSQL_ROOT_PASSWORD=ChangeMe123
+      - TZ=America/New_York
+      - MYSQL_DATABASE=default
+      - MYSQL_USER=yourusername
+      - MYSQL_PASSWORD=ChangeMe123
+    volumes:
+      - /docker-containers/mariadb:/config
+    ports:
+      - "3306:3306"
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    networks:
+      homelab:
+        aliases:
+          - mysql  # how to add multiple aliases
+          - romm-db
+          - db
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  homelab:
+    name: homelab      # Networks can also be given a custom name
+    external: true      # This option causes compose to join the above network instead of making a _default one, wont work without it though..
