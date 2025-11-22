@@ -1,0 +1,50 @@
+# version: '3' Supposedly obsolete now..
+
+services:
+  portainer:
+    image: portainer/portainer-ee:sts # latest didnt pull docker pull portainer/portainer-ee:2.20.1 now sts to get 2.20.2 and newer versions of it
+    container_name: portainer
+    command: -H unix:///var/run/docker.sock
+    restart: unless-stopped
+    environment:
+      - VIRTUAL_HOST=portainer.example.com
+      - VIRTUAL_PORT=9000
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /usr/share/zoneinfo/America/New_York:/etc/localtime
+      #- /docker-containers/portainer-be:/data # old location
+      - /docker-containers/portainer-be:/data
+    ports:
+      - 8000:8000        # new Portainer port I think
+      - 9443:9443        # SSL port for Portainer Business Edition
+      - 9110:9000        # Legacy Portainer CE version port 9k reflected 9110
+      # If referencing by container name for ip, use internal port not external (reverse proxy)
+    stdin_open: true     # docker run -i #interactive
+    tty: true            # docker run -t #ttyl
+    networks:
+      - homelab
+
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  default:
+  homelab:
+    name: homelab      # Networks can also be given a custom name, needs to be created if isn't already.
+
+    # a network with name homelab exists but was not created by compose.\\nSet `external: true` to use an existing network
+    external: true      # This option causes compose to join the above network instead of making a _default one, if not created already could be issues
+    #enable_ipv6: true
+
+# Save for later, think because it's already initialized this caused trouble starting out of nowhere.
+# Also need to make network attachable somehow, think this is the thing you can't do in compose when creating a network, may not be needed though.
+#     # We will name the network instead of letting docker do something random
+#     driver: bridge      # Making the above network macvlan
+#     driver_opts:         # driver options to use
+#       parent: enp3s0     # usually eth0 or eth1 but not always, used enp3s0 and enp4s0, had to delete /var/lib/docker/network/files/local-kv.db because phantom network
+#     ipam:
+#       config:
+#         - subnet: "172.69.0.0/24"    # Private range to initialize homelab possibly?
+# #          gateway: "192.168.1.1"      #host will eventually route to router, or just go direct
+# #        - subnet: "2605:a601:9132:d100:2::/80" # dual subnet ipv6, has to match router subnet unfortunately for external connections like samsung tv
+# #          gateway: "2605:a601:9132:d100:2:ffff:ffff:ffff"      #this needs to be router(ish)
+# #    external: true
