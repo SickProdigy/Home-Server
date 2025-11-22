@@ -18,12 +18,12 @@ services:
 
       # - ENABLE_WEBSOCKET_SUPPORT=false # didn't work, default true
       # - WEBUI_AUTH=false # can't be any users in db
-      # # Required for multi-worker/multi-instance deployments
-      # - REDIS_URL=redis://redis-valkey-webui:6379/0
+      # Required for multi-worker/multi-instance deployments
+      - REDIS_URL=redis://redis-valkey-webui:6379/0
 
-      # # Required for websocket support
-      # - WEBSOCKET_MANAGER=redis
-      # - WEBSOCKET_REDIS_URL=redis://redis-valkey-webui:6379/1
+      # Required for websocket support
+      - WEBSOCKET_MANAGER=redis
+      - WEBSOCKET_REDIS_URL=redis://redis-valkey-webui:6379/1
 
     volumes:
       - /docker-containers/open-webui/data:/app/backend/data
@@ -34,17 +34,23 @@ services:
         aliases:
           - openwebui # adding multiple aliases under certain network
           - open-wui
-  #   depends_on:
-  #     - redis-valkey-webui
+      openwebui_net:
+        aliases:
+          - openwebui_internal
+    depends_on:
+      - redis-valkey-webui
 
-  # redis-valkey-webui:
-  #   image: redis:7
-  #   container_name: redis-valkey-webui
-  #   restart: unless-stopped
-  #   networks:
-  #     - homelab
+  redis-valkey-webui:
+    image: redis:7
+    container_name: redis-valkey-webui
+    restart: unless-stopped
+    networks:
+      - openwebui_net
 
 networks:
   homelab:
     name: homelab      # Networks can also be given a custom name
     external: true      # This option causes compose to join the above network instead of making a _default one
+  openwebui_net:
+    name: openwebui_net
+    external: false
