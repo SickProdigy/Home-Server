@@ -1,0 +1,30 @@
+version: "2.1"
+services:
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    environment:
+      - PUID=1000
+      - PGID=1006
+      - TZ=America/New_York
+    volumes:
+      - /docker-containers/lidarr:/config
+      - /Music/Music-Library:/music #optional
+      - /Videos/Music:/musicvideos
+      - /unsorted:/downloads #optional
+      - /docker-containers/lidarr/custom-services:/custom-services.d
+      - /docker-containers/lidarr/custom-cont-init:/custom-cont-init.d
+    ports:
+      - 8686:8686
+    logging:
+      driver: json-file
+      options:
+        max-size: "10mb"
+        max-file: "1"
+    restart: unless-stopped
+    networks:
+      - homelab
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  homelab:
+    name: homelab      # Networks can also be given a custom name
+    external: true      # This option causes compose to join the above network instead of making a _default one
