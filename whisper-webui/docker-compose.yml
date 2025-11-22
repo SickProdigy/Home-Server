@@ -1,0 +1,36 @@
+services:
+  app:
+    build: .
+    image: jhj0517/whisper-webui:latest
+
+    volumes:
+      # Update paths to mount models and output paths to your custom paths like this, e.g:
+      # - C:/whisper-models/custom-path:/Whisper-WebUI/models
+      # - C:/whisper-webui-outputs/custom-path:/Whisper-WebUI/outputs
+      - /docker-containers/whisper-webui/models:/Whisper-WebUI/models
+      - /docker-containers/whisper-webui/outputs:/Whisper-WebUI/outputs
+
+    ports:
+      - "7860:7860"
+
+    stdin_open: true
+    tty: true
+
+    entrypoint: ["python", "app.py", "--server_port", "7860", "--server_name", "0.0.0.0",]
+
+    # If you're not using nvidia GPU, Update device to match yours.
+    # See more info at : https://docs.docker.com/compose/compose-file/deploy/#driver
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
+
+#    network_mode: service:wireguard     # To run through vpn service container, in turn UI port must be forwarded inside vpn. No local access unless otherwise defined
+    networks:           # Specify network for container
+      - homelab
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  homelab:
+    external: true      # This option causes compose to join the above network instead of making a _default one (supposedly)
