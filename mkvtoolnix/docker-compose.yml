@@ -1,0 +1,21 @@
+version: "3"
+services:
+  mkvtoolnix:
+    image: jlesage/mkvtoolnix
+    restart: unless-stopped
+    ports:
+      - "5800:5800" # mkvtoolnix gui
+    volumes:
+      - /docker-containers/mkvtoolnix:/config:rw
+      - /docker-containers/mkvtoolnix/storage:/storage:rw
+      - /TvShows:/storage/tvshows:rw
+      - /Videos:/storage/videos:rw
+      - /Movies:/storage/movies:rw
+    networks:
+      homelab:
+        aliases:
+          - mkvtool
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  homelab:
+    name: homelab      # Networks can also be given a custom name
+    external: true      # This option causes compose to join the above network instead of making a _default one
