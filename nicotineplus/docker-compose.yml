@@ -1,0 +1,38 @@
+---
+version: "2.1"
+services:
+  nicotine-plus:
+    image: ghcr.io/fletchto99/nicotine-plus-docker:latest
+    container_name: nicotine-plus
+    security_opt:
+      - seccomp:unconfined #optional
+    environment:
+      - PUID=1000
+      - PGID=1006
+      - TZ=America/New_York 
+      # - PASSWORD= #optional
+    volumes:
+      - /docker-containers/nicotineplus/data:/config
+      - /unsorted/nicotineplus/complete:/data/downloads
+      - /unsorted/nicotineplus/incomplete:/data/incomplete_downloads
+      - /Music:/data/shared/Music #Shared Music Folder
+      - /Movies:/data/shared/Movies #Shared Movies folder
+      - /TvShows:/data/shared/TvShows #Shared TvShows folder
+      - /Videos:/data/shared/Videos #Shared Videos folder
+      - /programs:/data/shared/Programs #Shared Programs folder
+      - /games:/data/shared/Games #Shared Games folder
+      - /Books:/data/shared/Books #Shared Books folder
+    ports:
+      - 6080:6080
+      - 2234-2239:2234-2239
+    restart: unless-stopped
+    stdin_open: true    # to attach to containers
+    tty: true           # also used to attach to containers
+#    network_mode: service:wireguard     # To run through vpn service container, in turn UI port must be forwarded inside vpn. No local access unless otherwise defined
+    networks:           # Specify network for container
+      homelab:
+        aliases:
+          - nicotineplus # adding multiple aliases under certain network
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  homelab:
+    external: true      # This option causes compose to join the above network instead of making a _default one (supposedly)
