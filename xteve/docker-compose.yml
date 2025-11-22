@@ -1,0 +1,30 @@
+version: "2"
+services:
+  xteve_g2g_owi:
+    container_name: xteve
+    image: alturismo/xteve_g2g_owi:latest
+    environment: 
+      - TZ="America/New_York"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+    restart: always
+    volumes:
+      - /docker-containers/xteve/:/root/.xteve:rw
+      - /docker-containers/xteve/_config/:/config:rw
+      - /docker-containers/_guide2go/:/guide2go:rw
+      - /docker-containers/_owi2plex/:/owi2plex:rw
+      - /docker-containers/tmp/xteve/:/tmp/xteve:rw
+      - /docker-containers/tvheadend/:/TVH
+    ports:
+      - "34400:34400"
+    stdin_open: true    # to attach to containers
+    tty: true           # also used to attach to containers
+#    network_mode: service:wireguard     # To run through vpn service container, in turn UI port must be forwarded inside vpn. No local access unless otherwise defined
+    networks:           # Specify network for container
+      - homelab
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  homelab:
+    external: true      # This option causes compose to join the above network instead of making a _default one (supposedly)
