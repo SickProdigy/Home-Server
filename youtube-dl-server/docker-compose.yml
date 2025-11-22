@@ -1,0 +1,17 @@
+  
+version: '3.5'
+services:
+  youtube-dl-server:
+    image: "nbr23/youtube-dl-server:latest"
+    container_name: youtube-dl-server
+    volumes:
+      # - $HOME/youtube-dl:/youtube-dl
+      - /docker-containers/youtube-dl-server/youtube-dl:/youtube-dl
+      - /docker-containers/youtube-dl-server/config.yml:/app_config/config.yml:ro # Overwrite the container's config file with your own configuration
+    restart: always
+    networks:           # Specify network for container
+      -  homelab
+
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  homelab:
+    external: true      # This option causes compose to join the above network instead of making a _default one (supposedly) also forces to join instead of creating one
