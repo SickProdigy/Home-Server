@@ -1,0 +1,27 @@
+# version: "2.1" # Kind of old school and not needed with portainer
+services:
+
+# IPTV xml creator. Will combin all iptv channels, free and premium. Still figuring it out
+  tvheadend:
+    image: lscr.io/linuxserver/tvheadend:latest
+    container_name: tvheadend
+    environment:
+      - PUID=1000
+      - PGID=1006
+      - TZ=America/New_York
+      # - RUN_OPTS= #optional
+    volumes:
+      - /docker-containers/tvheadend:/config
+      - /Videos/Recordings/tvheadend:/recordings
+    ports:
+      - 9981:9981
+      - 9982:9982
+    restart: unless-stopped
+    stdin_open: true    # to attach to containers
+    tty: true           # also used to attach to containers
+#    network_mode: service:wireguard     # To run through vpn service container, in turn UI port must be forwarded inside vpn. No local access unless otherwise defined
+    networks:           # Specify network for container
+      - homelab
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  homelab:
+    external: true      # This option causes compose to join the above network instead of making a _default one (supposedly)
