@@ -1,0 +1,27 @@
+version: "2.1"
+services:
+# Download iptv-org epg data
+  iptv-org-epg:
+    image: iptv-org/epg
+    container_name: iptv-org-epg
+    environment:
+      - CRON_SCHEDULE="45 22,10 * * *"
+      - MAX_CONNECTIONS=10
+      # - GZIP=true
+      # - PROXY="socks5://127.0.0.1:1234"
+      - DAYS=14
+      - TIMEOUT=5
+      - DELAY=2
+    volumes:
+      - /docker-containers/iptv-org-epg/channels.xml:/epg/channels.xml
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    networks:
+      - homelab
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  homelab:
+    name: homelab      # Networks can also be given a custom name
+    external: true      # This option causes compose to join the above network instead of making a _default one
