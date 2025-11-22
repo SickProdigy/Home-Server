@@ -1,0 +1,32 @@
+version: "2.1"
+services:
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      - PUID=1000
+      - PGID=1006
+      - TZ=America/New_York
+      - WEBUI_PORT=8089
+    volumes:
+      - /docker-containers/qbittorrent:/config
+      - /unsorted:/downloads
+      - /games:/games
+      - /Videos:/videos
+      - /programs:/programs
+    ports:
+      - 8089:8089
+      - 6881:6881
+      - 6881:6881/udp
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+#    network_mode: service:wireguard     # To run through vpn service container
+    networks:
+      homelab:
+        aliases: 
+          - qbit
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  homelab:
+    name: homelab      # Networks can also be given a custom name
+    external: true      # This option causes compose to join the above network instead of making a _default one
