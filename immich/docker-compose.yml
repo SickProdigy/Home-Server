@@ -38,7 +38,11 @@ services:
       homelab:
         aliases:
           - immich  # how to add multiple aliases
-          - immich-server 
+          - immich-server
+      immich_net:
+        aliases:
+          - immich  # how to add multiple aliases
+          - immich-server
 
   immich-machine-learning:
     container_name: immich_machine_learning
@@ -56,7 +60,7 @@ services:
     healthcheck:
       disable: false
     networks:           # Specify network for container
-      - homelab
+      - immich_net
 
   redis:
     container_name: immich_redis
@@ -65,7 +69,7 @@ services:
       test: redis-cli ping || exit 1
     restart: always
     networks:           # Specify network for container
-      - homelab
+      - immich_net
 
   database:
     container_name: immich_postgres
@@ -101,7 +105,7 @@ services:
       ]
     restart: always
     networks:           # Specify network for container
-      - homelab
+      - immich_net
 
 volumes:
   pgdata:
@@ -110,3 +114,5 @@ volumes:
 networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
   homelab:
     external: true      # This option causes compose to join the above network instead of making a _default one (supposedly)
+  immich_net:
+    external: false
