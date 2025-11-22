@@ -1,0 +1,28 @@
+version: '3'
+#---------------------------------------------------------------------#
+#     Homarr - A simple, yet powerful dashboard for your server.     #
+#---------------------------------------------------------------------#
+services:
+  homarr:
+    container_name: homarr
+    image: ghcr.io/homarr-labs/homarr:latest
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /docker-containers/homarr/appdata:/appdata
+      # - /docker-containers/homarr/configs:/app/data/configs
+      # - /docker-containers/homarr/data:/data
+      # - /docker-containers/homarr/icons:/app/public/icons
+    environment:
+      - SECRET_ENCRYPTION_KEY=YourEncryptedString32Byte
+    ports:
+      - '7575:7575'
+    stdin_open: true    # to attach to containers
+    tty: true           # also used to attach to containers
+#    network_mode: service:wireguard     # To run through vpn service container, in turn UI port must be forwarded inside vpn. No local access unless otherwise defined
+    networks:           # Specify network for container
+      - homelab
+networks:    # I don't know why but you have to specify the network 2x. In service, and in this tag area..
+  homelab:
+
+    external: true      # This option causes compose to join the above network instead of making a _default one (supposedly)
