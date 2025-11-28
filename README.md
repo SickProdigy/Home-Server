@@ -1,4 +1,4 @@
-# Home-Server Development
+# Docker-Home-Server Development
 ## Docker Home Server Testing & Setup
 
 Welcome to my home server development repository! Over the past 4-5 years, I’ve tested a wide variety of Docker containers for self-hosting and automation. This repo collects the containers I’ve found most useful, though some may be missing or not actively maintained. My goal is to organize each container into its own folder with a `docker-compose.yml` for easy setup and backup. Some configurations contain private information and will be refined before public release.
@@ -24,7 +24,7 @@ Below is a list of containers I’ve tested and recommend for various home serve
 - [calibre-web](./docker-compose/calibre-web)  
   *Web-based interface for Calibre e-book library.*
 - [chd-converter](./docker-compose/chd-converter)  
-  *Tool for converting disk images to CHD format.*
+  *Tool for converting playstation disk images to CHD format.*
 - [code-server](./docker-compose/code-server)  
   *VS Code running on a remote server accessible through the browser.*
 - [ddclient](./docker-compose/ddclient)  
